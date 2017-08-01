@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html ng-app="calculator">
+<head>
+	<title></title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" 
+	integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<script src="angular.min.js"></script>
+	<script src="angular-file-model.js"></script>
+	<script src="app.js"></script>
+</head>
+<body>
+	<div class="container" ng-controller="CalController">
+		<h1>Statistics Program</h1>
+		<hr>
+		<div class="row">
+			<div class="col-sm-2"></div>
+			<!-- input -->
+			<div class="col-sm-5">
+				<input type="file" file-model='fileX'>
+			</div>
+			<!-- buttons -->
+			<div class="btn-group">	
+				<button class="btn btn-primary <!--btn-block-->" ng-show="isFileChosen()" ng-click="getData()">Read File</button>
+				<button class="btn btn-info <!--btn-xs btn-block-->" ng-show="isStorage()" ng-click="loadStorage()">Read Storage</button>
+				<button class="btn btn-warning <!--btn-xs btn-block-->" ng-show="isStorage()" ng-click="clearStorage()">Clear</button>			
+			</div>
+		</div>
+		<hr>
+		<div class="row">
+			<!-- notifications -->
+            <div class="alert alert-warning text-center" ng-show="idleAlert">
+                <strong>No files loaded!</strong> Choose a file.. 
+            </div>
+            <div class="alert alert-info text-center" ng-show="firstAlert">
+                <strong>First file loaded!</strong> Choose another.. 
+			</div>
+			<div class="alert alert-success text-center" ng-show="secondAlert">
+				<strong>Second file loaded!</strong> Data stored in LocalStorage.
+			</div>
+            <div class="alert alert-success text-center" ng-show="loadFromStorageAlert">
+                <strong>Data loaded!</strong> From LocalStorage.
+            </div>
+            <div class="alert alert-danger text-center" ng-show="emptyStorageAlert">
+                <strong>LocalStorage Cleared!</strong>
+            </div>
+		</div>
+		<hr>
+		
+		<!-- psp01 -->
+		<!-- table X -->
+		<table class="table table-hover table-condensed">
+			<tr class="info">
+				<th>#</th>
+				<th>Xi</th>
+				<th>XminusMean</th>
+				<th>XminusMeanSquared</th>
+				
+				<th>XY</th>
+				<th>Xsquared</th>
+			</tr>
+			<!-- repeating data -->
+			<tr ng-repeat="num in results.numbers[0] track by $index">
+				<td>{{ $index + 1 }}</td>
+				<td>{{ num | number : 2 }}</td>
+				<td>{{ results.xMinusMeanArray[$index] | number : 2 }}</td>
+				<td>{{ results.xMinusMeanSquaredArray[$index] | number : 2 }}</td>
+
+				<td>{{ results.xTimesY[$index] | number : 2 }}</td>
+				<td>{{ results.xSquared[$index] | number : 2 }}</td>
+			</tr>
+			<tr> <!-- summary -->
+				<th class="success">SumXi</th>
+				<td class="warning">{{ results.sumX | number : 2 }}</td>
+				<td class="invis"></td>
+				<td class="warning">{{ results.SumXMinusMeanSquared | number : 2 }}</td>
+				<td class="warning">{{ results.sumXY | number : 2 }}</td>
+				<td class="warning">{{ results.sumXSquared | number : 2 }}</td>
+			</tr>
+			<tr>
+				<th class="success">Mean</th>
+				<td class="warning">{{ results.meanX | number : 2 }}</td>
+			</tr>
+			<tr>
+				<th class="success">Standard Deviation</th>
+				<td class="warning">{{ results.stdDeviationX | number : 7 }}</td>
+			</tr>
+		</table>
+		
+		<!-- psp02 -->
+		<!-- table Y -->
+		<table class="table table-hover table-condensed">
+			<tr class="info">	
+				<th>#</th>
+				<th>Yi</th>
+				<th>YminusMean</th>
+				<th>YminusMeanSquared</th>
+				<th>Ysquared</th>
+			</tr>
+			<!-- repeating data -->
+			<tr ng-repeat="num in results.numbers[1] track by $index">
+				<td>{{ $index + 1 }}</td>
+				<td>{{ num | number : 2 }}</td>
+				<td>{{ results.yMinusMeanArray[$index]  | number : 2 }}</td>
+				<td>{{ results.yMinusMeanSquaredArray[$index] | number : 2 }}</td>
+				<td>{{ results.ySquared[$index] | number : 2 }}</td>
+			</tr>
+			<tr> <!-- summary -->
+				<th class="success">SumYi</th>
+				<td class="warning">{{ results.sumY | number : 2 }}</td>
+				<td class="invis"></td>
+				<td class="warning">{{ results.SumYMinusMeanSquared | number : 2 }}</td>
+				<td class="warning">{{ results.sumYSquared | number : 2 }}</td>
+			</tr>
+			<tr>
+				<th class="success">Mean</th>
+				<td class="warning">{{ results.meanY | number : 2 }}</td>
+			</tr>
+			<tr>
+				<th class="success">Standard Deviation</th>
+				<td class="warning">{{ results.stdDeviationY | number : 7 }}</td>
+			</tr>
+		</table>
+		
+		<!-- psp02 -->
+		<!-- LINEAR REGRESSION -->
+		<table class="table table-hover table-condensed">
+			<tr class="info">
+				<th class="info" colspan="4">Linear Regression</th>
+			</tr>
+			<tr>
+				<th class="success col-sm-3">beta<sub>1</sub></th>
+				<td class="warning col-sm-3">{{ results.beta1 | number : 6 }}</td>
+				<th class="success col-sm-3">beta<sub>0</sub></th>
+				<td class="warning col-sm-3">{{ results.beta0 | number : 4 }}</td>
+			</tr>
+		</table>
+		
+		<!-- psp02 -->
+		<!-- CORRELATION -->
+		<table class="table table-hover table-condensed">
+			<tr class="info">
+				<th class="info" colspan="4">Correlation</th>
+			</tr>
+			<tr>
+				<th class="success col-sm-3">Top</th>
+				<td class="warning col-sm-3">{{ results.top | number : 1 }}</td>
+				<th class="success col-sm-3">Bottom</th>
+				<td class="warning col-sm-3">{{ results.bottom | number : 3 }}</td>
+			</tr>
+			<tr>
+				<th class="success col-sm-3">Top / Bottom</th>
+				<td class="warning col-sm-3">{{ results.topDividedByBottom | number : 6 }}</td>
+			</tr>
+			<tr>
+				<th class="success col-sm-3">r</th>
+				<td class="warning col-sm-3">{{ results.r | number : 6 }}</td>
+				<th class="success col-sm-3">rSquared</th>
+				<td class="warning col-sm-3">{{ results.rSquared | number : 6 }}</td>
+			</tr>
+			<tr>
+				<th class="success col-sm-3">y<sub>k</sub></th>
+				<td class="warning col-sm-3">{{ results.Yk }}</td>
+			</tr>
+		</table>
+
+		<!-- CALCYK IF USING INPUT FIELD FOR XK -->
+		<form ng-submit="calcYk()">
+			<span class="label label-primary">Give an Estimate ( X<sub>k</sub> )</span>
+			<br>
+			<input type="number" ng-model="estimate" placeholder="Estimate"/>
+			<button class="btn btn-success" type="submit">Calculate y<sub>k</sub></button>
+		</form>
+	</div>
+</body>
+</html>
